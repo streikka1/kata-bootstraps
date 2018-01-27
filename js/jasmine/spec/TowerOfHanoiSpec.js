@@ -2,24 +2,48 @@ describe('Tower of Hanoi', () => {
     const towerSourceName = "sourcePeg";
     const towerTargetName = "auxPeg";
     const towerAuxName = "targetPeg";
+    const towerSize = 5;
 
-    // Initial situation (beforeEach?) 
+    // Initial situation  
     // All disks are on source peg, sorted by size. 
-    // Disk 1 is the smallest disk, i.e. at the top 
-    let towerSource = [1, 2, 3, 4, 5];
+    // Disk 1 is the smallest disk, i.e. at the end of a tower array  
+    let towerSource = [];
     let towerTarget = [];
     let towerAux = [];
+    let biggestDisk = towerSize
 
-    let biggestDisk = towerSource.length;
+    beforeEach(() => {
+        for (let index = towerSize; index >= 1; index--) {
+            towerSource.push(index);
+        }
+        towerTarget = [];
+        towerAux = [];
+        // Create test object to track recursive function calls via spies 
+        spyOn(towerOfHanoi, 'move').and.callThrough();
+    });
 
-        it('moves biggest Disk to target tower', () => {
-            // At first biggest Disk is on source tower
-            expect(towerSource.indexOf(biggestDisk)).not.toBe(-1);
-            expect(towerTarget.indexOf(biggestDisk)).toBe(-1);
-            moveTowerofHanoi(biggestDisk, towerSource, towerTarget, towerAux);
-            // moveTowerOfHanou moves biggest disk to target tower
-            expect(towerSource.indexOf(biggestDisk)).toBe(-1);
-            expect(towerTarget.indexOf(biggestDisk)).not.toBe(-1);
-        });
+    afterEach(() => {
+        towerSource = [];
+    });
+
+    it(`starts with ${towerSize} disks on source tower`, () => {
+        expect(towerSource.length).toBe(towerSize);
+    });
+
+    it(`moves biggest disk ${biggestDisk} to target tower as bottom disk`, () => {
+        towerOfHanoi.move(towerSize, towerSource, towerTarget, towerAux);
+        expect(towerTarget.indexOf(biggestDisk)).toBe(0);
+    });
+
+    it(`moves all disks from source to target, keeping the correct oder (smallest at the top)`, () => {
+        let towerSourceTmp = towerSource.slice();
+        expect(towerOfHanoi.move(towerSize, towerSource, towerTarget, towerAux)).toEqual(towerSourceTmp);
+    });
+
+    it('moves disks n-1..1 to auxPeg via recusion', () => {
+        // Use spy on first recursive call
+        towerOfHanoi.move(towerSize, towerSource, towerTarget, towerAux);
+        expect(towerOfHanoi.move.calls.argsFor(1)).toEqual([towerSize - 1, towerSource, towerAux, towerTarget]);
+    });
 
 });
